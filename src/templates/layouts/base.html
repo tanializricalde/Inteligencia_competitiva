@@ -1,0 +1,32 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}{{ application_branding.application_name }}{% endblock %}</title>
+  {% if application_branding.favicon %}
+    <link rel="icon" href="{% url 'application_brand_asset' 'favicon' %}">
+  {% else %}
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/dashboard-brand-default.svg' %}">
+  {% endif %}
+  <script>
+    (() => {
+      const root = document.documentElement;
+      try {
+        const stored = localStorage.getItem("market-watch-theme");
+        const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        root.setAttribute("data-bs-theme", stored === "dark" || stored === "light" ? stored : preferred);
+      } catch (_error) {
+        root.setAttribute("data-bs-theme", "light");
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="{% static 'dist/app.css' %}">
+  <script defer src="{% static 'dist/app.js' %}"></script>
+</head>
+<body>
+  {% block body %}{% endblock %}
+</body>
+</html>

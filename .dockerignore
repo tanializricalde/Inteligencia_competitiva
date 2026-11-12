@@ -1,0 +1,11 @@
+.git
+.venv
+.env
+data
+evidence
+staticfiles
+frontend/node_modules
+codex/staging/tmp
+**/__pycache__
+**/.pytest_cache
+

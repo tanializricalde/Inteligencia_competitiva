@@ -1,0 +1,31 @@
+{% extends "layouts/app.html" %}
+{% block title %}Reseñas · {{ application_branding.application_name }}{% endblock %}
+{% block content %}
+{% include "components/messages.html" %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Reseñas</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'reviews:summary' %}">Resumen</a>
+    {% if perms.reviews.export_reviews %}
+      <a class="btn btn-outline-primary" href="{% url 'reviews:export_csv' %}?{{ querystring }}">CSV</a>
+      <a class="btn btn-outline-primary" href="{% url 'reviews:export_json' %}?{{ querystring }}">JSON</a>
+    {% endif %}
+  </div>
+</div>
+<form class="card card-body mb-3 stacked-form" method="get">
+  <div class="row">{% for field in filter_form %}<div class="col-md-3">{{ field.label_tag }}{{ field }}</div>{% endfor %}</div>
+  <button class="btn btn-primary mt-2" type="submit">Filtrar</button>
+</form>
+<div class="card"><div class="table-responsive"><table class="table table-vcenter">
+  <thead><tr><th>Competidor</th><th>Fuente</th><th>Fecha</th><th>Usuario</th><th>★</th><th>Comentario</th><th>Respuesta</th><th>Sentimiento</th></tr></thead>
+  <tbody>{% for review in page.object_list %}<tr>
+    <td>{{ review.provider_run.provider.name }}</td><td>{{ review.source_label }}</td>
+    <td>{{ review.review_published_at|default:review.ingested_at|date:"d/m/Y H:i" }}</td>
+    <td>{{ review.user_name|default:"Anónimo" }}</td><td>{{ review.rating_stars|default:"—" }}</td>
+    <td><a href="{% url 'reviews:detail' review.id %}">{{ review.customer_comment|default:"(sin texto)"|truncatechars:80 }}</a></td>
+    <td>{% if review.has_developer_response == True %}<span class="badge bg-green-lt">Sí</span>{% elif review.has_developer_response == False %}<span class="badge bg-secondary-lt">No</span>{% else %}<span class="badge bg-yellow-lt">Sin datos</span>{% endif %}</td>
+    <td>{{ review.sentiment_label }}</td>
+  </tr>{% empty %}<tr><td colspan="8">No hay reseñas para los filtros seleccionados.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% if page.has_other_pages %}<nav class="mt-3" aria-label="Paginación de reseñas"><span>Página {{ page.number }} de {{ page.paginator.num_pages }}</span>{% if page.has_previous %} <a href="?{{ querystring }}&amp;page={{ page.previous_page_number }}">Anterior</a>{% endif %}{% if page.has_next %} <a href="?{{ querystring }}&amp;page={{ page.next_page_number }}">Siguiente</a>{% endif %}</nav>{% endif %}
+{% endblock %}

@@ -1,0 +1,5 @@
+httpx>=0.28,<1
+beautifulsoup4>=4.13,<5
+lxml>=5.3,<7
+playwright>=1.52,<2
+pandas>=2.2,<3

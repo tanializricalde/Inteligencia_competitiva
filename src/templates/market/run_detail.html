@@ -1,0 +1,2 @@
+{% extends "layouts/app.html" %}{% block content %}<h1>Ejecución #{{ run.id }}</h1><p>{{ run.summary }}</p><div class="card"><table class="table"><thead><tr><th>Fuente</th><th>Estado</th><th>Planes</th><th>Error</th></tr></thead><tbody>{% for result in results %}<tr><td>{{ result.source }}</td><td>{{ result.get_status_display }}</td><td>{{ result.plan_count }}</td><td>{{ result.error_type }} {{ result.error_message }}</td></tr>{% endfor %}</tbody></table></div>{% endblock %}
+

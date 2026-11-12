@@ -1,0 +1,195 @@
+[defaults]
+timeout_seconds = 20
+max_items = 100
+country_code = "PE"
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+max_response_bytes = 5000000
+allow_private_hosts = false
+
+# Puede ser absoluta o relativa al directorio desde el que se ejecuta la CLI.
+# Se recomienda usar '/' también en Windows para evitar escapes TOML.
+[output]
+directory = "cli_dist/csv"
+
+[[providers]]
+code = "competidor_demo"
+name = "Competidor Demo"
+plans_filename = "planes_demo.csv"
+reviews_filename = "resenas_demo.csv"
+
+[[providers.plan_sources]]
+name = "Planes de demostración"
+adapter_key = "fixture_plans"
+url = "https://fixture.invalid/plans"
+enabled = false
+
+[providers.plan_sources.config]
+fixture_plans = [
+  { external_id = "basico", product = "facturacion", name = "Plan Básico", price = "29.90", currency = "PEN", periodicity = "monthly", monthly_price = "29.90", discount_percentage = "10", price_after_discount = "26.91", is_offer_active = true, promotion_text = "10% por lanzamiento", features = { soporte = { state = "offered", original = "Soporte por correo", category = "Soporte" } } },
+]
+
+[[providers.review_sources]]
+name = "Reseñas de demostración"
+adapter_key = "fixture_app_reviews"
+url = "https://fixture.invalid/reviews"
+platform = "demo_store"
+app_id = "com.example.demo"
+country_code = "PE"
+enabled = true
+max_pages = 10
+
+[providers.review_sources.config]
+page_size = 50
+fixture_reviews = [
+  { external_review_id = "review-1", author_name = "Ana", rating = 5, review_text = "Muy útil, rápida y clara 🚀", published_at = "2026-01-15T13:00:00Z", helpful_votes = 0, response_known = true },
+]
+
+[[providers]]
+code = "idrixcontable"
+name = "iDrix Contable"
+plans_filename = "planes_idrixcontable.csv"
+reviews_filename = "resenas_idrixcontable.csv"
+
+[[providers.plan_sources]]
+name = "Planes del sistema contable iDrix"
+adapter_key = "idrixcontable_plans"
+url = "https://idrixcontable.com/planes"
+enabled = true
+timeout_seconds = 30
+
+[[providers.review_sources]]
+name = "Reseñas Google Maps iDrix"
+adapter_key = "google_maps_reviews"
+url = "https://www.google.com/maps/place/iDrix+Technology+S.A/@-0.0880259,-78.27327,286166m/data=!3m1!1e3!4m8!3m7!1s0x91d547748e1efa05:0xa06f1cf0ec117bdf!8m2!3d-0.2537331!4d-79.1949516!9m1!1b1!16s%2Fg%2F11fp7vc1p_?entry=ttu&g_ep=EgoyMDI2MDkzMC4wIKXMDSoASAFQAw%3D%3D"
+platform = "google_maps"
+country_code = "EC"
+enabled = true
+timeout_seconds = 60
+retry_limit = 2
+request_delay_seconds = 2
+max_pages = 2
+
+# Perfil corto: alrededor de 10 reseñas; la metadata evita scroll si ya están cargadas.
+[providers.review_sources.config]
+page_size = 25
+max_scrolls = 100
+stable_scroll_attempts = 10
+scroll_pause_ms = 1200
+scroll_pause_jitter_ms = 500
+scroll_distance_min = 600
+scroll_distance_max = 1300
+scroll_rest_every = 5
+scroll_rest_ms = 2000
+max_load_seconds = 120
+
+[[providers]]
+code = "siigo_ec"
+name = "Siigo Ecuador"
+plans_filename = "planes_siigo.csv"
+reviews_filename = "resenas_siigo.csv"
+
+[[providers.plan_sources]]
+name = "Planes públicos Siigo"
+adapter_key = "siigo_plans"
+url = "https://www.siigo.com/ec/planes/"
+enabled = true
+
+[[providers.review_sources]]
+name = "Reseñas Google Maps Siigo Contífico"
+adapter_key = "google_maps_reviews"
+url = "https://www.google.com/maps/place/Siigo+Cont%C3%ADfico+%7C+Sistema+de+facturaci%C3%B3n+electr%C3%B3nica+%7C+POS+online+%7C+contable/@-2.1543509,-79.8918241,2339m/data=!3m2!1e3!5s0x902d6d988080e2f9:0xbcf80464be0f81fb!4m16!1m7!3m6!1s0x902d6d987f04cd01:0xb340790bf6f17312!2sSiigo+Cont%C3%ADfico+%7C+Sistema+de+facturaci%C3%B3n+electr%C3%B3nica+%7C+POS+online+%7C+contable!8m2!3d-2.1578239!4d-79.8969951!16s%2Fg%2F11c2k42c7j!3m7!1s0x902d6d987f04cd01:0xb340790bf6f17312!8m2!3d-2.1578239!4d-79.8969951!9m1!1b1!16s%2Fg%2F11c2k42c7j?entry=ttu&g_ep=EgoyMDI2MDkyOC4wIKXMDSoASAFQAw%3D%3D"
+platform = "google_maps"
+country_code = "EC"
+enabled = true
+timeout_seconds = 180
+retry_limit = 3
+request_delay_seconds = 3
+max_pages = 2
+
+# Backfill grande: más de 300 reseñas en un solo lote para no recorrer desde cero decenas de veces.
+[providers.review_sources.config]
+page_size = 500
+max_scrolls = 1000
+stable_scroll_attempts = 20
+scroll_pause_ms = 1800
+scroll_pause_jitter_ms = 900
+scroll_distance_min = 500
+scroll_distance_max = 1400
+scroll_rest_every = 8
+scroll_rest_ms = 5000
+max_load_seconds = 1200
+
+[[providers]]
+code = "anfibius"
+name = "Anfibius"
+plans_filename = "planes_anfibius.csv"
+reviews_filename = "resenas_anfibius.csv"
+
+[[providers.plan_sources]]
+name = "Planes de facturación electrónica Anfibius"
+adapter_key = "anfibius_plans"
+url = "https://anfibius.net/planes-de-facturacion-electronica-cual-elegir-segun-tu-empresa/"
+enabled = true
+
+
+[[providers.review_sources]]
+name = "Reseñas Google Maps Anfibius"
+adapter_key = "google_maps_reviews"
+url = "https://www.google.com/maps/place/Anfibius+Ecuador/@-0.2597262,-79.1611512,9363m/data=!3m1!1e3!4m18!1m9!3m8!1s0x91d5465e56e9b047:0x6b055a06a877fcfb!2sAnfibius+Ecuador!8m2!3d-0.2611238!4d-79.1367797!9m1!1b1!16s%2Fg%2F11cs0ffs97!3m7!1s0x91d5465e56e9b047:0x6b055a06a877fcfb!8m2!3d-0.2611238!4d-79.1367797!9m1!1b1!16s%2Fg%2F11cs0ffs97?entry=ttu&g_ep=EgoyMDI2MDkyOC4wIKXMDSoASAFQAw%3D%3D"
+platform = "google_maps"
+country_code = "EC"
+enabled = true
+timeout_seconds = 90
+retry_limit = 3
+request_delay_seconds = 3
+max_pages = 2
+
+# Perfil mediano: alrededor de 50 reseñas en un solo lote.
+[providers.review_sources.config]
+page_size = 100
+max_scrolls = 250
+stable_scroll_attempts = 12
+scroll_pause_ms = 1300
+scroll_pause_jitter_ms = 600
+scroll_distance_min = 600
+scroll_distance_max = 1400
+scroll_rest_every = 10
+scroll_rest_ms = 3000
+max_load_seconds = 300
+
+[[providers]]
+code = "perseo"
+name = "Perseo"
+plans_filename = "planes_perseo.csv"
+reviews_filename = "resenas_perseo.csv"
+
+[[providers.plan_sources]]
+name = "Planes Perseo WEB, PC y PRIME"
+adapter_key = "perseo_plans"
+url = "https://tusistemacontable.com/"
+enabled = true
+
+[[providers.review_sources]]
+name = "Reseñas Google Maps Perseo"
+adapter_key = "google_maps_reviews"
+url = "https://www.google.com/maps/place/PERSEO+%7C+Sistema+Contable:+Gestor+Comercial/@-2.1864395,-77.9284373,1197542m/data=!3m1!1e3!4m8!3m7!1s0x8e2a77685f08830f:0xace9b3998acecfd8!8m2!3d0.0082756!4d-78.4382119!9m1!1b1!16s%2Fg%2F11nckwkl5y?entry=ttu&g_ep=EgoyMDI2MDkyOC4wIKXMDSoASAFQAw%3D%3D"
+platform = "google_maps"
+country_code = "EC"
+enabled = true
+timeout_seconds = 45
+retry_limit = 2
+request_delay_seconds = 1
+max_pages = 2
+
+# Perfil mínimo: una reseña; normalmente no necesita scroll.
+[providers.review_sources.config]
+page_size = 10
+max_scrolls = 50
+stable_scroll_attempts = 8
+scroll_pause_ms = 1000
+scroll_pause_jitter_ms = 400
+scroll_distance_min = 600
+scroll_distance_max = 1200
+scroll_rest_every = 5
+scroll_rest_ms = 2000
+max_load_seconds = 60

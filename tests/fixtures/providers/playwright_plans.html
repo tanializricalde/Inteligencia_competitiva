@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Planes JS</title></head>
+<body><main id="app"></main>
+<script>
+window.addEventListener("DOMContentLoaded", () => {
+  document.querySelector("#app").innerHTML = `
+    <section data-plans-root>
+      <article class="plan-card" data-plan-id="basic" data-product="facturacion">
+        <h2 class="plan-name"> Básico </h2>
+        <span class="plan-price" data-currency="PEN">S/ 49,90</span>
+        <span class="plan-periodicity">por mes</span>
+        <div class="plan-feature" data-key="users" data-value="5">Hasta 5 usuarios</div>
+      </article>
+      <article class="plan-card" data-plan-id="pro">
+        <h2 class="plan-name">Pro</h2>
+        <span class="plan-price" data-currency="PEN">S/ 99.00</span>
+        <span class="plan-periodicity">mensual</span>
+        <div class="plan-feature" data-key="support">Soporte 24/7</div>
+      </article>
+    </section>`;
+});
+</script></body></html>
+

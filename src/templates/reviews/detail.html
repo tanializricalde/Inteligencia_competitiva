@@ -1,0 +1,14 @@
+{% extends "layouts/app.html" %}
+{% block title %}Reseña · {{ application_branding.application_name }}{% endblock %}
+{% block content %}
+<a href="{% url 'reviews:list' %}">← Volver a reseñas</a>
+<h1 class="mt-2">Reseña publicada</h1>
+<p>{{ review.provider_run.provider.name }} · {{ review.source_label }}</p>
+<article class="card card-body mb-3">
+  <div class="d-flex justify-content-between gap-3 flex-wrap"><strong>{{ review.user_name|default:"Usuario anónimo" }}</strong><span>{{ review.review_published_at|default:review.ingested_at|date:"d/m/Y H:i" }}</span></div>
+  <p class="mt-2">{% if review.rating_stars %}{{ review.rating_stars }} estrellas{% else %}Calificación sin datos{% endif %} · {{ review.sentiment_label }}</p>
+  <div class="mb-3">{{ review.customer_comment|default:"(sin comentario)"|linebreaksbr }}</div>
+  {% if review.has_developer_response == True %}<div class="alert alert-info"><strong>Respuesta del proveedor:</strong><br>{{ review.developer_response|default:"(respuesta sin texto)"|linebreaksbr }}{% if review.response_published_at %}<br><small>{{ review.response_published_at|date:"d/m/Y H:i" }}</small>{% endif %}</div>{% elif review.has_developer_response == False %}<p class="text-secondary">Sin respuesta del proveedor.</p>{% else %}<p class="text-secondary">Estado de respuesta sin datos.</p>{% endif %}
+  <small>Incorporada al pipeline {{ review.ingested_at|date:"d/m/Y H:i" }}.</small>
+</article>
+{% endblock %}

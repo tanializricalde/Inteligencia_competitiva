@@ -1,0 +1,21 @@
+{% extends "layouts/app.html" %}
+{% block title %}Pipeline de mercado · {{ application_branding.application_name }}{% endblock %}
+{% block content %}
+{% include "components/messages.html" %}
+<div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+  <div><h1 class="mb-1">Pipeline de mercado</h1><p class="text-secondary mb-0">Extracción, limpieza, normalización y publicación secuencial.</p></div>
+  {% if perms.pipeline.add_pipelinerun %}<form method="post" action="{% url 'request_pipeline_run' %}">{% csrf_token %}<button class="btn btn-primary" type="submit"><i class="ti ti-player-play" aria-hidden="true"></i> Ejecutar pipeline completo</button></form>{% endif %}
+</div>
+<section class="card mb-3" aria-labelledby="pipeline-sources-title">
+  <div class="card-header"><h2 id="pipeline-sources-title" class="card-title">Fuentes configuradas</h2></div>
+  <div class="table-responsive"><table class="table card-table"><thead><tr><th>Proveedor</th><th>Etapa</th><th>Fuente</th><th>Adaptador</th><th>Estado</th></tr></thead><tbody>
+  {% for source in sources %}<tr><td>{{ source.provider.name }}</td><td>{{ source.get_data_type_display }}</td><td>{{ source.name }}</td><td><code>{{ source.adapter_key }}</code></td><td>{% if source.is_active %}<span class="badge bg-green-lt">Activa</span>{% else %}<span class="badge bg-secondary-lt">Inactiva</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="5">No hay fuentes. Ejecuta <code>manage.py seed_market_pipeline</code>.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+<section class="card" aria-labelledby="pipeline-runs-title">
+  <div class="card-header"><h2 id="pipeline-runs-title" class="card-title">Ejecuciones recientes</h2></div>
+  <div class="table-responsive"><table class="table card-table"><thead><tr><th>ID</th><th>Perfil</th><th>Origen</th><th>Estado</th><th>Estado por proveedor</th><th>Solicitada por</th><th>Inicio</th><th>Fin</th></tr></thead><tbody>
+  {% for run in runs %}<tr><td><code>{{ run.id }}</code></td><td>{{ run.profile_version.profile.code }}@{{ run.profile_version.version }}</td><td>{{ run.get_trigger_type_display }}</td><td>{{ run.get_status_display }}</td><td><ul class="list-unstyled mb-0">{% for provider_run in run.provider_runs.all %}<li>{{ provider_run.provider.name }}: {{ provider_run.get_status_display }}{% if provider_run.display_error_summary %}<details class="text-danger"><summary>{{ provider_run.display_error_summary|truncatechars:140 }}</summary><span class="d-block text-break">{{ provider_run.display_error_summary }}</span></details>{% endif %}</li>{% empty %}<li class="text-secondary">Sin proveedores iniciados</li>{% endfor %}</ul></td><td>{{ run.requested_by.email|default:"Programador" }}</td><td>{{ run.started_at|date:"d/m/Y H:i"|default:"—" }}</td><td>{{ run.finished_at|date:"d/m/Y H:i"|default:"—" }}</td></tr>{% empty %}<tr><td colspan="8">Todavía no hay ejecuciones.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

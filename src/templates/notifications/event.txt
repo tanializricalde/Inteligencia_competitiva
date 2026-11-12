@@ -1,0 +1,6 @@
+{{ title|default:"Notificación de la aplicación" }}
+
+{{ summary }}
+
+Consulta los detalles en {{ app_base_url }}
+

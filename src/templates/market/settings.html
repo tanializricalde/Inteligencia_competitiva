@@ -1,0 +1,29 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+{% include "components/messages.html" %}
+<h1>Notificaciones</h1>
+<div class="row row-cards">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Destinatarios</h2></div>
+      <div class="card-body">
+        <ul>
+          {% for item in recipients %}<li>{{ item.name }} · {{ item.email }}</li>{% empty %}<li>Sin destinatarios.</li>{% endfor %}
+        </ul>
+        {% if perms.notifications.add_notificationrecipient %}
+          <form class="stacked-form" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="recipient">
+            {{ recipient_form.as_div }}
+            <button class="btn btn-primary mt-3">Agregar</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<form method="post" action="{% url 'test_email_configuration' %}" class="mt-3">
+  {% csrf_token %}
+  <button class="btn btn-outline-primary">Probar correo</button>
+</form>
+{% endblock %}

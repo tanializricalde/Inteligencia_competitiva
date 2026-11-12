@@ -1,0 +1,39 @@
+{% extends "layouts/base.html" %}
+{% block body %}
+<div class="app-shell" data-app-shell>
+  <aside class="sidebar" id="app-sidebar">
+    <a class="brand brand-light" href="{% url 'dashboard' %}">
+      <span class="sidebar-brand-full">{% if application_branding.application_logo %}<img src="{% url 'application_brand_asset' 'application_logo' %}" alt="{{ application_branding.application_logo_alt }}">{% endif %}<span class="sidebar-brand-name">{{ application_branding.application_name }}</span></span>
+      <span class="sidebar-brand-short">{% if application_branding.compact_logo %}<img src="{% url 'application_brand_asset' 'compact_logo' %}" alt="{{ application_branding.compact_logo_alt }}">{% else %}<span aria-hidden="true">{{ application_branding.compact_name }}</span><span class="visually-hidden">{{ application_branding.application_name }}</span>{% endif %}</span>
+    </a>
+    <nav aria-label="Principal">
+      <a href="{% url 'dashboard' %}" title="Resumen"><i class="ti ti-layout-dashboard"></i><span class="sidebar-label">Resumen</span></a>
+      <a href="{% url 'comparison' %}" title="Comparación"><i class="ti ti-columns-3"></i><span class="sidebar-label">Comparación</span></a>
+      <a href="{% url 'reviews:list' %}" title="Reseñas"><i class="ti ti-message-star"></i><span class="sidebar-label">Reseñas</span></a>
+      <a href="{% url 'pipeline_runs' %}" title="Pipeline de mercado"><i class="ti ti-route"></i><span class="sidebar-label">Pipeline de mercado</span></a>
+      {% if perms.notifications.view_notificationrecipient %}<a href="{% url 'functional_settings' %}" title="Notificaciones"><i class="ti ti-mail-cog"></i><span class="sidebar-label">Notificaciones</span></a>{% endif %}
+      {% if perms.market.change_dashboardsettings %}<a href="{% url 'application_settings' %}" title="Configuración de la aplicación"><i class="ti ti-palette"></i><span class="sidebar-label">Configuración de la aplicación</span></a>{% endif %}
+    </nav>
+  </aside>
+  <div class="app-main">
+    <header class="navbar">
+      <button class="btn btn-icon btn-ghost-secondary sidebar-toggle" type="button" data-sidebar-toggle aria-controls="app-sidebar" aria-expanded="true" title="Contraer menú"><i class="ti ti-menu-2" aria-hidden="true"></i><span class="visually-hidden">Contraer o expandir menú</span></button>
+      <div class="navbar-actions">
+        {% include "components/theme_toggle.html" %}
+        {% if request.user.is_staff %}
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'admin:index' %}">
+            <i class="ti ti-shield-lock" aria-hidden="true"></i>
+            Volver a administración
+          </a>
+        {% endif %}
+        <span class="user-email">{{ request.user.email }}</span>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="link-button" type="submit">Salir</button>
+        </form>
+      </div>
+    </header>
+    <main class="page">{% block content %}{% endblock %}</main>
+  </div>
+</div>
+{% endblock %}

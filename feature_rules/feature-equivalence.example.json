@@ -1,0 +1,541 @@
+{
+  "$schema": "./feature-equivalence.schema.json",
+  "schema_version": 1,
+  "input": {
+    "group_by": ["competidor_id", "plan_id"],
+    "competitor_field": "competidor_id",
+    "text_field": "nombre_modulo",
+    "normalized_text_field": "nombre_modulo_normalizado",
+    "included_field": "incluido",
+    "deduplicate_by": [
+      "competidor_id",
+      "plan_id",
+      "nombre_modulo_normalizado",
+      "incluido"
+    ]
+  },
+  "behavior": {
+    "unknown_competitor": "fallback",
+    "multiple_matching_rules": "error",
+    "invalid_capture": "error",
+    "unmatched": {
+      "mode": "dynamic_boolean",
+      "column_from": "nombre_modulo_normalizado",
+      "value_from": "incluido",
+      "reducer": "any",
+      "default": false,
+      "prefix": ""
+    }
+  },
+  "columns": {
+    "usuarios_normales": {"type": "integer", "default": 0, "reducer": "sum"},
+    "usuarios_contador": {"type": "integer", "default": 0, "reducer": "sum"},
+    "usuarios_sin_clasificar": {"type": "integer", "default": 0, "reducer": "sum"},
+    "usuarios_app_movil": {"type": "integer", "default": 0, "reducer": "sum"},
+    "app_movil_incluida": {
+      "type": "boolean",
+      "default": false,
+      "reducer": "any",
+      "label": "Aplicación móvil"
+    },
+    "modulos_adicionales_por_consultar": {
+      "type": "boolean",
+      "default": false,
+      "reducer": "any"
+    },
+    "nomina_incluida": {"type": "boolean", "default": false, "reducer": "any"},
+    "nomina_personas_max": {"type": "integer", "default": 0, "reducer": "max"},
+    "modulo_facturacion": {
+      "type": "boolean",
+      "default": false,
+      "reducer": "any",
+      "tags": ["module"],
+      "label": "Facturación electrónica"
+    },
+    "modulo_fiscal": {
+      "type": "boolean",
+      "default": false,
+      "reducer": "any",
+      "tags": ["module"],
+      "label": "Conexión SRI y Registro Civil"
+    },
+    "modulo_inventario": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Inventario"},
+    "modulo_contabilidad": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Contabilidad"},
+    "centro_de_costos": {"type": "boolean", "default": false, "reducer": "any", "label": "Centro de costos"},
+    "modulo_bancos": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Bancos"},
+    "modulo_conciliacion_bancaria": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Conciliación bancaria"},
+    "modulo_activos_fijos": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Activos fijos"},
+    "modulo_importaciones": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Importaciones"},
+    "modulo_tesoreria": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Tesorería"},
+    "modulo_inteligencia_negocios": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Inteligencia de negocios"},
+    "modulo_reportes": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Reportes"},
+    "modulo_capacitacion": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Capacitación"},
+    "modulo_soporte": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Soporte"},
+    "modulo_produccion": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Producción"},
+    "modulo_bodegas": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Bodegas"},
+    "modulo_liquidacion_tarjetas": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Liquidación de tarjetas"},
+    "modulo_compras": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Compras"},
+    "modulo_cartera": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Gestión de cartera"},
+    "modulo_facturacion_lote": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Facturación en lote"},
+    "modulo_catalogo_productos": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Catálogo de productos y servicios"},
+    "modulo_guia_remision": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Guía de remisión"},
+    "modulo_proformas": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Proformas"},
+    "modulo_variantes": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Variantes"},
+    "modulo_api": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "API"},
+    "modulo_punto_venta": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Punto de venta"},
+    "modulo_multiempresa": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Multiempresa"},
+    "modulo_restaurantes": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Restaurantes"},
+    "modulo_tienda_online": {"type": "boolean", "default": false, "reducer": "any", "tags": ["module"], "label": "Tienda online"}
+  },
+  "derived_columns": {
+    "usuarios_totales": {
+      "type": "integer",
+      "operation": "sum_columns",
+      "inputs": [
+        "usuarios_normales",
+        "usuarios_contador",
+        "usuarios_sin_clasificar",
+        "usuarios_app_movil"
+      ],
+      "null_policy": "null_if_all_null"
+    },
+    "total_modulos": {
+      "type": "integer",
+      "operation": "count_true",
+      "select": {"tag": "module"},
+      "default": 0
+    },
+    "lista_modulos": {
+      "type": "string",
+      "operation": "join_labels",
+      "select": {"tag": "module"},
+      "separator": "|",
+      "distinct": true,
+      "default": null
+    }
+  },
+  "rule_sets": {
+    "common": [
+      {
+        "id": "nomina_con_limite",
+        "priority": 100,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*n[oó]mina(?:\\s+de)?\\s*\\(?\\s*(?P<personas>\\d+)\\s+personas?\\s*\\)?\\*?\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "nomina_incluida", "value": {"literal": true}},
+          {"column": "nomina_personas_max", "value": {"capture": "personas"}}
+        ],
+        "consume": true
+      },
+      {
+        "id": "nomina_sin_limite",
+        "priority": 90,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*n[oó]mina\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "nomina_incluida", "value": {"literal": true}}
+        ],
+        "consume": true
+      }
+    ],
+    "modules": [
+      {
+        "id": "modulo_facturacion_electronica",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:facturacion|emision_de_comprobantes_electronicos_autorizados_por_el_sri|facturacion_electronica|facturacion_electronica_ilimitada)$"},
+        "outputs": [{"column": "modulo_facturacion", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_conexion_fiscal",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "conexion_sri_y_registro_civil"},
+        "outputs": [{"column": "modulo_fiscal", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_inventario",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:gestion_de_inventarios|inventario|productos_inventarios_y_kardex|manejo_de_inventarios)$"},
+        "outputs": [{"column": "modulo_inventario", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_contabilidad",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:integracion_completa_con_sistema_contable_en_la_nube|contabilidad|contabilidad_integrada)$"},
+        "outputs": [{"column": "modulo_contabilidad", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulos_contabilidad_y_cartera",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "contabilidad_y_gestion_de_cartera"},
+        "outputs": [
+          {"column": "modulo_contabilidad", "value": {"field": "incluido"}},
+          {"column": "modulo_cartera", "value": {"field": "incluido"}}
+        ],
+        "consume": true
+      },
+      {
+        "id": "centro_de_costos",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "centro_de_costos"},
+        "outputs": [{"column": "centro_de_costos", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_bancos",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:integracion_con_cuentas_bancarias|bancos|modulo_de_bancos)$"},
+        "outputs": [{"column": "modulo_bancos", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_conciliacion_bancaria",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:conciliacion_basica|conciliaciones_bancarias)$"},
+        "outputs": [{"column": "modulo_conciliacion_bancaria", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_activos_fijos",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "activos_fijos"},
+        "outputs": [{"column": "modulo_activos_fijos", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_importaciones",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:importaciones|modulo_de_importaciones)$"},
+        "outputs": [{"column": "modulo_importaciones", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_tesoreria",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "tesoreria"},
+        "outputs": [{"column": "modulo_tesoreria", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_inteligencia_negocios",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:business_intelligence|conexion_powerbi|(?:24|36)_graficos_(?:bi_gerenciales|de_bi_dash_board))$"},
+        "outputs": [{"column": "modulo_inteligencia_negocios", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulos_reportes_e_inteligencia_negocios",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "mas_de_60_reportes_36_graficos_de_bi"},
+        "outputs": [
+          {"column": "modulo_reportes", "value": {"field": "incluido"}},
+          {"column": "modulo_inteligencia_negocios", "value": {"field": "incluido"}}
+        ],
+        "consume": true
+      },
+      {
+        "id": "modulo_reportes",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:reportes_fiscales_periodicos|informes_gerenciales|(?:20_reportes|(?:20|30)_reportes_financieros_contables_y_comerciales))$"},
+        "outputs": [{"column": "modulo_reportes", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_capacitacion",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:capacitacion|capacitaciones_zoom_diarias|video_tutoriales|video_tutoriales_y_capacitaciones_zoom)$"},
+        "outputs": [{"column": "modulo_capacitacion", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_soporte",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:sla_prioritario|soporte_limitado|soporte_tecnico_24_7|soporte_tecnico_continuo)$"},
+        "outputs": [{"column": "modulo_soporte", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_produccion",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:produccion|modulo_de_producciones)$"},
+        "outputs": [{"column": "modulo_produccion", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_bodegas",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:manejo_de_bodega_1|manejo_de_bodegas|manejo_de_bodegas_y_sucursales)$"},
+        "outputs": [{"column": "modulo_bodegas", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_liquidacion_tarjetas",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "liquidacion_de_tarjetas_de_credito"},
+        "outputs": [{"column": "modulo_liquidacion_tarjetas", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_compras",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:compras|compras_de_productos_y_servicios)$"},
+        "outputs": [{"column": "modulo_compras", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_cartera",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:gestion_de_cartera|cuentas_por_cobrar_y_pagar)$"},
+        "outputs": [{"column": "modulo_cartera", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "aplicacion_movil",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:app_idrix|app_contifico)$"},
+        "outputs": [{"column": "app_movil_incluida", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_facturacion_lote",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^(?:facturacion_en_lote|facturacion_de_lote_100_documentos_recurrentes|facturacion_en_lote_2_500_documentos_recurrentes)$"},
+        "outputs": [{"column": "modulo_facturacion_lote", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_catalogo_productos",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^creacion_(?:de_)?servicios?_y_productos$"},
+        "outputs": [{"column": "modulo_catalogo_productos", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_guia_remision",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "guia_de_remision"},
+        "outputs": [{"column": "modulo_guia_remision", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_proformas",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "manejo_de_proformas"},
+        "outputs": [{"column": "modulo_proformas", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_variantes",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "modulo_de_variantes"},
+        "outputs": [{"column": "modulo_variantes", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_api",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^api_key(?:_1|_ilimitado)?$"},
+        "outputs": [{"column": "modulo_api", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_punto_venta",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "regex", "pattern": "^punto_de_venta(?:_offline)?$"},
+        "outputs": [{"column": "modulo_punto_venta", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_multiempresa",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "multiempresa"},
+        "outputs": [{"column": "modulo_multiempresa", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_restaurantes",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "modulo_para_restaurantes"},
+        "outputs": [{"column": "modulo_restaurantes", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulo_tienda_online",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "tienda_online_integrada"},
+        "outputs": [{"column": "modulo_tienda_online", "value": {"field": "incluido"}}],
+        "consume": true
+      },
+      {
+        "id": "modulos_adicionales_por_consultar",
+        "priority": 80,
+        "when": {"field": "nombre_modulo_normalizado", "operator": "equals", "value": "consulta_sobre_modulos_adicionales"},
+        "outputs": [{"column": "modulos_adicionales_por_consultar", "value": {"field": "incluido"}}],
+        "consume": true
+      }
+    ],
+    "siigo_ec": [
+      {
+        "id": "siigo_usuarios_y_contador",
+        "priority": 200,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*(?P<normales>\\d+)\\s+usuarios?\\s*\\|\\s*(?P<contador>\\d+)\\s+usuarios?\\s+contador(?:es)?\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "usuarios_normales", "value": {"capture": "normales"}},
+          {"column": "usuarios_contador", "value": {"capture": "contador"}}
+        ],
+        "consume": true
+      },
+      {
+        "id": "siigo_usuarios_contador",
+        "priority": 190,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*(?P<contador>\\d+)\\s+usuarios?\\s+contador(?:es)?\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "usuarios_contador", "value": {"capture": "contador"}}
+        ],
+        "consume": true
+      }
+    ],
+    "idrixcontable": [
+      {
+        "id": "idrix_usuarios_normales",
+        "priority": 200,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*usuarios?\\s*:\\s*(?P<cantidad>\\d+)\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "usuarios_normales", "value": {"capture": "cantidad"}}
+        ],
+        "consume": true
+      },
+      {
+        "id": "idrix_usuarios_contador",
+        "priority": 200,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*usuarios?\\s+contador(?:es)?\\s*:\\s*(?P<cantidad>\\d+)\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "usuarios_contador", "value": {"capture": "cantidad"}}
+        ],
+        "consume": true
+      }
+    ],
+    "perseo": [
+      {
+        "id": "perseo_usuarios_sin_clasificar_prefijo",
+        "priority": 200,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*usuarios?\\s*:\\s*(?P<cantidad>\\d+)\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "usuarios_sin_clasificar", "value": {"capture": "cantidad"}}
+        ],
+        "consume": true
+      },
+      {
+        "id": "perseo_usuarios_sin_clasificar_sufijo",
+        "priority": 200,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*(?P<cantidad>\\d+)\\s+usuarios?\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "usuarios_sin_clasificar", "value": {"capture": "cantidad"}}
+        ],
+        "consume": true
+      },
+      {
+        "id": "perseo_usuarios_app_prefijo",
+        "priority": 200,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*usuarios?\\s+app\\s*:\\s*(?P<cantidad>\\d+)\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "usuarios_app_movil", "value": {"capture": "cantidad"}},
+          {"column": "app_movil_incluida", "value": {"field": "incluido"}}
+        ],
+        "consume": true
+      },
+      {
+        "id": "perseo_usuarios_y_app_movil",
+        "priority": 210,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*usuarios?\\s*\\(\\s*(?P<usuarios>\\d+)\\s*\\)\\s*/\\s*aplicaci[oó]n\\s+m[oó]vil\\s*\\(\\s*(?P<movil>\\d+)\\s*\\)\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "usuarios_sin_clasificar", "value": {"capture": "usuarios"}},
+          {"column": "usuarios_app_movil", "value": {"capture": "movil"}},
+          {"column": "app_movil_incluida", "value": {"field": "incluido"}}
+        ],
+        "consume": true
+      },
+      {
+        "id": "perseo_licencias_app_movil",
+        "priority": 200,
+        "when": {
+          "field": "nombre_modulo",
+          "operator": "regex",
+          "pattern": "^\\s*(?P<cantidad>\\d+)\\s+licencias?\\s+app\\s+perseom[oó]vil\\s*$",
+          "flags": ["IGNORECASE"]
+        },
+        "outputs": [
+          {"column": "usuarios_app_movil", "value": {"capture": "cantidad"}},
+          {"column": "app_movil_incluida", "value": {"field": "incluido"}}
+        ],
+        "consume": true
+      }
+    ]
+  },
+  "competitors": {
+    "anfibius": {"rule_sets": ["common", "modules"]},
+    "siigo_ec": {
+      "rule_sets": ["common", "modules", "siigo_ec"],
+      "column_defaults": {
+        "usuarios_sin_clasificar": 0,
+        "usuarios_app_movil": 0
+      }
+    },
+    "idrixcontable": {"rule_sets": ["common", "modules", "idrixcontable"]},
+    "perseo": {
+      "rule_sets": ["common", "modules", "perseo"],
+      "column_defaults": {"usuarios_normales": 0, "usuarios_contador": 0}
+    }
+  }
+}

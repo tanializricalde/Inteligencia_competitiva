@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "market-watch"
+version = "0.1.0"
+description = "Monitoreo comparativo de planes comerciales"
+requires-python = ">=3.12"
+dependencies = [
+  "Django>=5.2,<5.3",
+  "django-environ>=0.12,<1",
+  "django-unfold>=0.65,<1",
+  "httpx>=0.28,<1",
+  "beautifulsoup4>=4.13,<5",
+  "lxml>=5.3,<7",
+  "nh3>=0.3.6,<1",
+  "pandas>=2.2,<3",
+  "tenacity>=9,<10",
+  "APScheduler>=3.11,<4",
+  "playwright>=1.52,<2",
+  "gunicorn>=23,<24",
+  "whitenoise>=6.9,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<10",
+  "pytest-django>=4.11,<5",
+  "pytest-cov>=6,<8",
+  "respx>=0.22,<1",
+  "ruff>=0.11,<1",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "--strict-markers --strict-config -ra"
+markers = ["playwright: requiere Chromium local y se ejecuta por separado"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+extend-exclude = ["**/migrations/*.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "DJ"]
+ignore = ["DJ001", "DJ008"]
+
+[tool.ruff.format]
+quote-style = "double"

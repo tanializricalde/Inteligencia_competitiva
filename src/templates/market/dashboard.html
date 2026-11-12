@@ -1,0 +1,211 @@
+{% extends "layouts/app.html" %}
+{% load static %}
+{% block title %}{{ dashboard_settings.header_title }} · {{ application_branding.application_name }}{% endblock %}
+{% block content %}
+{% include "components/messages.html" %}
+<details class="card dashboard-disclosure mb-3"{% if not filters_applied %} open{% endif %}>
+  <summary><span><i class="ti ti-layout-dashboard" aria-hidden="true"></i> Encabezado del dashboard</span><span class="text-secondary">{{ dashboard_settings.header_title }}</span></summary>
+  <header class="dashboard-hero">
+    <div class="dashboard-brand">
+    {% if dashboard_settings.header_image %}
+      <img src="{% url 'dashboard_brand_image' %}" alt="{{ dashboard_settings.header_image_alt }}">
+    {% elif application_branding.application_logo %}
+      <img src="{% url 'application_brand_asset' 'application_logo' %}" alt="{{ application_branding.application_logo_alt }}">
+    {% else %}
+      <img src="{% static 'images/dashboard-brand-default.svg' %}" alt="{{ application_branding.application_name }}">
+    {% endif %}
+    <div>
+      <p class="dashboard-kicker">Inteligencia competitiva</p>
+      <h1>{{ dashboard_settings.header_title }}</h1>
+      <div class="dashboard-cutoffs text-secondary">
+        {% for cutoff in dashboard_data.cutoffs %}
+          <span>{{ cutoff.provider }}: {{ cutoff.published_at|date:"d/m/Y H:i" }}</span>
+        {% empty %}
+          <span>Sin publicaciones para la selección actual</span>
+        {% endfor %}
+      </div>
+    </div>
+    </div>
+    {% if perms.market.change_dashboardsettings %}
+      <a class="btn btn-outline-primary btn-sm" href="{% url 'application_settings' %}">
+        <i class="ti ti-adjustments" aria-hidden="true"></i> Configurar
+      </a>
+    {% endif %}
+  </header>
+</details>
+
+{% if selection.scope == "demo" %}
+  <div class="alert alert-warning" role="status">
+    <i class="ti ti-flask" aria-hidden="true"></i>
+    <strong>Datos demostrativos:</strong> no representan el mercado real.
+  </div>
+{% endif %}
+
+<details class="card dashboard-filters dashboard-disclosure mb-3"{% if not filters_applied %} open{% endif %}>
+  <summary><span><i class="ti ti-filter" aria-hidden="true"></i> Vista y filtros</span><span class="text-secondary">{{ selection.preset.name }} · {{ selection.period_months }} meses</span></summary>
+  <section class="card-body" aria-labelledby="dashboard-filter-title">
+    <div class="d-flex justify-content-between gap-3 flex-wrap align-items-center mb-3">
+      <div>
+        <h2 id="dashboard-filter-title" class="card-title mb-1">Vista y filtros</h2>
+        <p class="text-secondary mb-0">Todos los paneles comparten esta selección.</p>
+      </div>
+      {% if selection.temporary_filters %}
+        <a class="btn btn-ghost-secondary" href="?preset={{ selection.preset.slug }}&amp;period={{ selection.period_months }}">Restablecer la vista</a>
+      {% endif %}
+    </div>
+    <form method="get" action="{% url 'dashboard' %}#dashboard-results" class="dashboard-filter-form" data-dashboard-filter-form>
+      <div>
+        <label class="form-label" for="dashboard-preset">Vista</label>
+        <select class="form-select" id="dashboard-preset" name="preset">
+          {% for preset in presets %}
+            <option value="{{ preset.slug }}"{% if preset.pk == selection.preset.pk %} selected{% endif %}>{{ preset.name }}{% if preset.data_scope == "demo" %} · DEMO{% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label" for="dashboard-period">Periodo</label>
+        <select class="form-select" id="dashboard-period" name="period">
+          {% for value, label in period_options %}
+            <option value="{{ value }}"{% if value == selection.period_months %} selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <fieldset class="dashboard-filter-checks">
+        <legend>Competidores</legend>
+        {% for provider in selection.available_providers %}
+          <label><input class="form-check-input" type="checkbox" name="provider" value="{{ provider.code }}"{% if provider in selection.providers %} checked{% endif %} data-dashboard-provider> {{ provider.name }}</label>
+        {% empty %}<span class="text-secondary">Sin competidores publicados.</span>{% endfor %}
+      </fieldset>
+      {% regroup selection.available_plans by provider as plan_groups %}
+      <fieldset class="dashboard-plan-filter">
+        <legend>Planes por competidor</legend>
+        <div class="dashboard-plan-options">
+          {% for group in plan_groups %}
+            <div><strong>{{ group.grouper.name }}</strong>
+              {% for plan in group.list %}
+                <label><input class="form-check-input" type="checkbox" name="plan" value="{{ plan.id }}"{% if plan in selection.plans %} checked{% endif %} data-provider-code="{{ plan.provider.code }}"> {{ plan.dashboard_name }}</label>
+              {% endfor %}
+            </div>
+          {% empty %}<span class="text-secondary">Sin planes publicados.</span>{% endfor %}
+        </div>
+      </fieldset>
+      <div class="dashboard-filter-actions"><button class="btn btn-primary" type="submit">Aplicar filtros</button></div>
+    </form>
+
+    {% if can_add_dashboard_preset or can_change_dashboard_preset or can_delete_dashboard_preset %}
+      <div class="dashboard-preset-actions mt-3">
+        {% if can_add_dashboard_preset %}
+        <details>
+          <summary>Guardar una nueva vista</summary>
+          <form method="post" action="{% url 'dashboard_preset_save' %}" class="stacked-form mt-3">
+            {% csrf_token %}{{ preset_form.as_div }}
+            <button class="btn btn-primary" type="submit">Guardar vista</button>
+          </form>
+        </details>
+        {% endif %}
+        {% if current_preset_form and can_change_dashboard_preset %}
+          <details>
+            <summary>Actualizar “{{ selection.preset.name }}”</summary>
+            <form method="post" action="{% url 'dashboard_preset_save' %}" class="stacked-form mt-3">
+              {% csrf_token %}<input type="hidden" name="preset_id" value="{{ selection.preset.id }}">
+              {{ current_preset_form.as_div }}
+              <button class="btn btn-primary" type="submit">Actualizar vista</button>
+            </form>
+          </details>
+        {% endif %}
+        {% if current_preset_form and can_delete_dashboard_preset %}
+          <form method="post" action="{% url 'dashboard_preset_delete' selection.preset.id %}">
+            {% csrf_token %}<button class="btn btn-outline-danger" type="submit">Eliminar vista</button>
+          </form>
+        {% endif %}
+      </div>
+    {% endif %}
+  </section>
+</details>
+
+{% if selection.providers and selection.plans %}
+<div class="dashboard-grid" id="dashboard-results" tabindex="-1">
+  <section class="card dashboard-panel dashboard-panel-wide" aria-labelledby="heatmap-title">
+    <div class="card-header dashboard-matrix-header">
+      <div><h2 id="heatmap-title" class="card-title">Matriz de funcionalidades</h2><span class="text-secondary small">{{ selection.features|length }} de {{ selection.available_features|length }} visibles</span></div>
+      <details class="dashboard-feature-filter" data-feature-filter>
+        <summary class="btn btn-outline-primary btn-sm">Filtrar características</summary>
+        <form method="get" action="{% url 'dashboard' %}#dashboard-results" class="dashboard-feature-filter-panel">
+          <input type="hidden" name="preset" value="{{ selection.preset.slug }}">
+          <input type="hidden" name="period" value="{{ selection.period_months }}">
+          <input type="hidden" name="feature_filter" value="1">
+          {% for provider in selection.providers %}<input type="hidden" name="provider" value="{{ provider.code }}">{% endfor %}
+          {% for plan in selection.plans %}<input type="hidden" name="plan" value="{{ plan.id }}">{% endfor %}
+          <label class="form-label" for="feature-filter-search">Buscar característica</label>
+          <input class="form-control form-control-sm" id="feature-filter-search" type="search" autocomplete="off" data-feature-search>
+          <p class="small text-secondary" aria-live="polite" data-feature-count>{{ selection.features|length }} características seleccionadas</p>
+          <div class="dashboard-feature-options">
+            {% for feature in selection.available_features %}
+              <label data-feature-option><input class="form-check-input" type="checkbox" name="feature" value="{{ feature.code }}"{% if feature in selection.features %} checked{% endif %}> <span>{{ feature.display_name }}</span></label>
+            {% empty %}<p class="text-secondary">No hay características disponibles para esta selección.</p>{% endfor %}
+          </div>
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <button class="btn btn-sm btn-ghost-primary" type="button" data-feature-select-all>Seleccionar todas</button>
+            <button class="btn btn-sm btn-ghost-secondary" type="button" data-feature-clear>Limpiar selección</button>
+            <a class="btn btn-sm btn-ghost-secondary" href="?{{ selection.feature_reset_query }}#dashboard-results">Restablecer</a>
+            <button class="btn btn-sm btn-primary ms-auto" type="submit">Aplicar</button>
+          </div>
+        </form>
+      </details>
+    </div>
+    <div class="card-body">
+      {% if dashboard_data.heatmap.rows %}
+      <div class="table-responsive"><table class="table dashboard-heatmap">
+        <thead><tr><th scope="col">Funcionalidad</th>{% for provider in selection.providers %}<th scope="col">{{ provider.name }}</th>{% endfor %}</tr></thead>
+        <tbody>{% for row in dashboard_data.heatmap.rows %}<tr><th scope="row">{{ row.label }}{% if row.unit %}<span class="text-secondary small d-block">{{ row.unit }}</span>{% endif %}</th>{% for cell in row.cells %}<td><span class="heat-cell heat-{{ cell.state }}" tabindex="0" title="{{ cell.detail }}" aria-label="{{ cell.aria_label }}"><span class="heat-cell-value" aria-hidden="true">{{ cell.value }}</span></span></td>{% endfor %}</tr>{% endfor %}</tbody>
+      </table></div>
+      <div class="dashboard-legend" aria-label="Leyenda"><span><i class="heat-supported"></i> Compatible</span><span><i class="heat-limited"></i> Parcial</span><span><i class="heat-unsupported"></i> No compatible</span><span><i class="heat-not_applicable"></i> No aplica</span><span><i class="heat-unknown"></i> Sin datos</span></div>
+      {% else %}<p class="dashboard-empty">No hay características con datos para estos planes. Puedes mostrar una característica sin datos desde su filtro.</p>{% endif %}
+    </div>
+  </section>
+
+  <section class="card dashboard-panel" aria-labelledby="evolution-title">
+    <div class="card-header"><h2 id="evolution-title" class="card-title">Evolución de precios</h2></div>
+    <div class="card-body">
+      {% if dashboard_data.price_evolution.datasets %}<div class="dashboard-chart"><canvas id="price-evolution-chart" aria-label="Evolución histórica de precios mensuales efectivos"></canvas></div>
+      <details class="dashboard-data-table"><summary>Ver datos del gráfico</summary><table class="table"><thead><tr><th>Serie</th><th>Valores</th></tr></thead><tbody>{% for series in dashboard_data.price_evolution.datasets %}<tr><th>{{ series.label }}</th><td>{{ series.values|join:", " }}</td></tr>{% endfor %}</tbody></table></details>
+      {% else %}<p class="dashboard-empty">No hay precios históricos comparables en el periodo.</p>{% endif %}
+    </div>
+  </section>
+
+  <section class="card dashboard-panel" aria-labelledby="rating-title">
+    <div class="card-header"><h2 id="rating-title" class="card-title">Precio mensual frente a puntuación</h2></div>
+    <div class="card-body">
+      {% if dashboard_data.price_rating.points %}<div class="dashboard-chart"><canvas id="price-rating-chart" aria-label="Precio mensual y puntuación media por proveedor"></canvas></div>
+      <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Proveedor</th><th>Precio</th><th>Puntuación</th><th>Reseñas</th></tr></thead><tbody>{% for point in dashboard_data.price_rating.points %}<tr><th>{{ point.label }}</th><td>{{ point.currency }} {{ point.x|floatformat:2 }}</td><td>{{ point.y|floatformat:2 }}</td><td>{{ point.reviews }}</td></tr>{% endfor %}</tbody></table></div>
+      <p class="text-secondary small">Las reseñas son del proveedor y no están vinculadas a un plan particular.</p>
+      {% else %}<p class="dashboard-empty">Se necesitan precios y reseñas calificadas dentro del periodo.</p>{% endif %}
+    </div>
+  </section>
+
+  <section class="card dashboard-panel" aria-labelledby="sentiment-title">
+    <div class="card-header"><h2 id="sentiment-title" class="card-title">Sentimiento derivado de estrellas</h2></div>
+    <div class="card-body">
+      {% if dashboard_data.sentiment.has_data %}<div class="dashboard-chart"><canvas id="sentiment-chart" aria-label="Distribución porcentual del sentimiento derivado de estrellas"></canvas></div>
+      <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Proveedor</th><th>Positivo</th><th>Neutral</th><th>Negativo</th><th>Sin clasificar</th></tr></thead><tbody>{% for row in dashboard_data.sentiment.rows %}<tr><th>{{ row.label }}</th><td>{% if row.positive is not None %}{{ row.positive|floatformat:2 }}%{% else %}—{% endif %}</td><td>{% if row.neutral is not None %}{{ row.neutral|floatformat:2 }}%{% else %}—{% endif %}</td><td>{% if row.negative is not None %}{{ row.negative|floatformat:2 }}%{% else %}—{% endif %}</td><td>{{ row.unclassified }}</td></tr>{% endfor %}</tbody></table></div>
+      {% else %}<p class="dashboard-empty">No hay reseñas publicadas dentro del periodo.</p>{% endif %}
+    </div>
+  </section>
+
+  <section class="card dashboard-panel dashboard-plans" aria-labelledby="plans-title">
+    <div class="card-header"><h2 id="plans-title" class="card-title">Planes y precios observados</h2><div class="btn-group" role="group" aria-label="Periodicidad"><button class="btn btn-sm btn-primary" type="button" data-price-period="monthly">Mensual</button><button class="btn btn-sm" type="button" data-price-period="annual">Anual</button></div></div>
+    <div class="card-body dashboard-plan-grid">
+      {% for provider in dashboard_data.plans %}<article class="dashboard-provider-plans" style="--provider-color:{{ provider.color }}"><h3>{{ provider.label }}</h3>
+        {% for plan in provider.plans %}<div class="dashboard-plan"><strong>{{ plan.name }}</strong>{% if plan.product %}<small>{{ plan.product }}</small>{% endif %}
+          {% for price in plan.prices %}<span data-plan-price="{{ price.period }}"{% if price.period == "annual" %} hidden{% endif %}>{{ price.currency }} {{ price.amount }} / {% if price.period == "monthly" %}mes{% else %}año{% endif %}</span>{% empty %}<span class="text-secondary">Precio no informado</span>{% endfor %}
+        </div>{% empty %}<p class="text-secondary">Sin planes.</p>{% endfor %}
+      </article>{% endfor %}
+    </div>
+  </section>
+</div>
+{% else %}
+  <div class="card" id="dashboard-results" tabindex="-1"><div class="card-body dashboard-empty"><h2>Sin datos para mostrar</h2><p>La vista o filtro actual no contiene competidores y planes publicados.</p></div></div>
+{% endif %}
+
+{{ dashboard_data|json_script:"dashboard-data" }}
+{% endblock %}

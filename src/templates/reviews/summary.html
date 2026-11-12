@@ -1,0 +1,13 @@
+{% extends "layouts/app.html" %}
+{% block title %}Resumen de reseñas{% endblock %}
+{% block content %}
+<h1>Resumen de reseñas{% if provider %}: {{ provider.name }}{% endif %}</h1>
+<div class="metric-grid mb-3">
+  <div class="card card-body"><small>Total</small><strong class="h2">{{ total }}</strong></div>
+  <div class="card card-body"><small>Promedio</small><strong class="h2">{{ average_rating|floatformat:2|default:"—" }}</strong></div>
+  <div class="card card-body"><small>Con respuesta</small><strong class="h2">{{ response_percentage|floatformat:1|default:"—" }}%</strong></div>
+  <div class="card card-body"><small>Sin sentimiento clasificado</small><strong class="h2">{{ unclassified_sentiment }}</strong></div>
+</div>
+<div class="row"><div class="col-md-6"><div class="card card-body"><h2>Distribución</h2>{% for stars, count in distribution %}<p>{{ stars }} estrellas: {{ count }}</p>{% endfor %}</div></div>
+<div class="col-md-6"><div class="card card-body"><h2>Tiempo de respuesta</h2><p>Promedio: {{ average_response_days|floatformat:2|default:"—" }} días</p><p>Mediana: {{ median_response_days|floatformat:2|default:"—" }} días</p></div></div></div>
+{% endblock %}

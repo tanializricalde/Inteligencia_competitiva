@@ -1,0 +1,15 @@
+{% extends "layouts/app.html" %}
+<h2 class="mt-4">Solicitudes recientes</h2><div class="card"><table class="table"><thead><tr><th>Fecha</th><th>Alcance</th><th>Estado</th><th>Ejecución</th></tr></thead><tbody>{% for item in requests %}<tr><td>{{ item.created_at|date:"d/m/Y H:i" }}</td><td>{{ item.source|default:item.provider|default:"Todas" }}</td><td>{{ item.get_status_display }}</td><td>{% if item.run_id %}<a href="{% url 'reviews:run_detail' item.run_id %}">#{{ item.run_id }}</a>{% else %}—{% endif %}</td></tr>{% empty %}<tr><td colspan="4">Sin solicitudes.</td></tr>{% endfor %}</tbody></table></div>
+{% block title %}Fuentes de reseñas{% endblock %}
+{% block content %}
+{% include "components/messages.html" %}
+<div class="d-flex justify-content-between mb-3"><h1>Fuentes de reseñas</h1><div class="d-flex gap-2"><a class="btn btn-outline-secondary" href="{% url 'reviews:runs' %}">Ejecuciones</a>
+{% if perms.reviews.add_reviewsource %}<a class="btn btn-outline-primary" href="{% url 'reviews:source_create' %}">Nueva fuente</a>{% endif %}
+{% if perms.reviews.run_reviews %}<form method="post" action="{% url 'reviews:request_all' %}">{% csrf_token %}<button class="btn btn-primary">Ejecutar activas</button></form>{% endif %}
+</div></div>
+<div class="card"><div class="table-responsive"><table class="table"><thead><tr><th>Competidor</th><th>Fuente</th><th>Plataforma</th><th>Adaptador</th><th>Estado</th><th>Último éxito</th><th></th></tr></thead><tbody>
+{% for source in sources %}<tr><td>{{ source.provider.code }}</td><td>{{ source.name }}</td><td>{{ source.get_platform_display }}</td><td><code>{{ source.adapter_key }}</code></td><td>{{ source.get_state_display }}{% if not source.enabled %} · deshabilitada{% endif %}</td><td>{{ source.last_success_at|date:"d/m/Y H:i"|default:"—" }}</td><td><div class="d-flex gap-1">{% if perms.reviews.run_reviews and source.enabled %}<form method="post" action="{% url 'reviews:request_source' source.id %}">{% csrf_token %}<button class="btn btn-sm">Solicitar</button></form>{% endif %}{% if perms.reviews.change_reviewsource %}<a class="btn btn-sm btn-ghost-secondary" href="{% url 'reviews:source_edit' source.id %}">Editar</a>{% endif %}</div></td></tr>
+{% empty %}<tr><td colspan="7">No hay fuentes de reseñas configuradas.</td></tr>{% endfor %}
+</tbody></table></div></div>
+<h2 class="mt-4">Solicitudes recientes</h2><div class="card"><table class="table"><thead><tr><th>Fecha</th><th>Alcance</th><th>Estado</th><th>Ejecución</th></tr></thead><tbody>{% for item in requests %}<tr><td>{{ item.created_at|date:"d/m/Y H:i" }}</td><td>{{ item.source|default:item.provider|default:"Todas" }}</td><td>{{ item.get_status_display }}</td><td>{% if item.run_id %}<a href="{% url 'reviews:run_detail' item.run_id %}">#{{ item.run_id }}</a>{% else %}—{% endif %}</td></tr>{% empty %}<tr><td colspan="4">Sin solicitudes.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

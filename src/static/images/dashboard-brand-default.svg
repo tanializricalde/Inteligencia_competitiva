@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 72" role="img" aria-labelledby="title desc">
+  <title id="title">Identidad de la aplicación</title>
+  <desc id="desc">Marca predeterminada con gráfico ascendente</desc>
+  <rect width="240" height="72" rx="14" fill="#172554"/>
+  <path d="M22 51V34l17-12 15 10 20-17" fill="none" stroke="#60a5fa" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="74" cy="15" r="5" fill="#bfdbfe"/>
+  <text x="92" y="34" fill="#fff" font-family="system-ui,sans-serif" font-size="19" font-weight="700">Market</text>
+  <text x="92" y="54" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="19" font-weight="700">Watch</text>
+</svg>

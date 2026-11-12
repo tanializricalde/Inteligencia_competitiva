@@ -1,0 +1,17 @@
+{% extends "layouts/base.html" %}
+{% block body %}
+<main class="auth-shell">
+  <div class="auth-toolbar">{% include "components/theme_toggle.html" %}</div>
+  <section class="auth-card" aria-labelledby="auth-title">
+    <a class="brand auth-brand" href="/">
+      {% if application_branding.application_logo %}
+        <img src="{% url 'application_brand_asset' 'application_logo' %}" alt="{{ application_branding.application_logo_alt }}">
+      {% else %}
+        {{ application_branding.application_name }}
+      {% endif %}
+    </a>
+    {% if messages %}{% for message in messages %}<div class="alert">{{ message }}</div>{% endfor %}{% endif %}
+    {% block auth_content %}{% endblock %}
+  </section>
+</main>
+{% endblock %}

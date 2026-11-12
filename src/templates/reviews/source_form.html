@@ -1,0 +1,3 @@
+{% extends "layouts/app.html" %}
+{% block title %}{% if source %}Editar{% else %}Nueva{% endif %} fuente de reseñas{% endblock %}
+{% block content %}<h1>{% if source %}Editar{% else %}Nueva{% endif %} fuente de reseñas</h1><form class="card card-body stacked-form" method="post">{% csrf_token %}{{ form.as_div }}<button class="btn btn-primary" type="submit">Guardar</button></form>{% endblock %}

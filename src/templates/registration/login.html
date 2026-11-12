@@ -1,0 +1,23 @@
+{% extends "layouts/auth.html" %}
+{% block title %}Ingresar · {{ application_branding.application_name }}{% endblock %}
+{% block auth_content %}
+<h1 id="auth-title" class="mt-4">Bienvenido</h1>
+<p class="text-secondary">Ingresa con tu correo corporativo.</p>
+<form class="stacked-form" method="post">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+  <div>
+    <label class="form-label" for="{{ form.username.id_for_label }}">Correo electrónico</label>
+    {{ form.username }}
+    {{ form.username.errors }}
+  </div>
+  <div>
+    <label class="form-label" for="{{ form.password.id_for_label }}">Contraseña</label>
+    {{ form.password }}
+    {{ form.password.errors }}
+  </div>
+  <input type="hidden" name="next" value="{{ next }}">
+  <button class="btn btn-primary w-100" type="submit">Ingresar</button>
+</form>
+<a class="d-inline-block mt-3" href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
+{% endblock %}

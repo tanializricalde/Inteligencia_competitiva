@@ -1,0 +1,30 @@
+{% extends "layouts/app.html" %}
+{% block title %}Comparación · {{ application_branding.application_name }}{% endblock %}
+{% block content %}
+{% include "components/messages.html" %}
+<div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+  <div><h1 class="mb-1">Comparación de planes</h1><p class="text-secondary mb-0">Sólo se utilizan las publicaciones vigentes del pipeline y el ámbito de la vista elegida.</p></div>
+  <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}?{{ selection.canonical_query }}">Volver al dashboard</a>
+</div>
+<form class="card card-body mb-3" method="get">
+  <div class="row g-3">
+    <div class="col-md-4"><label class="form-label" for="comparison-preset">Vista</label><select class="form-select" id="comparison-preset" name="preset">{% for preset in presets %}<option value="{{ preset.slug }}"{% if preset.id == selection.preset.id %} selected{% endif %}>{{ preset.name }}{% if preset.data_scope == "demo" %} · DEMO{% endif %}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><label class="form-label" for="comparison-period">Periodo</label><select class="form-select" id="comparison-period" name="period">{% for value, label in period_options %}<option value="{{ value }}"{% if value == selection.period_months %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="col-12"><label class="form-label" for="comparison-plans">Planes publicados</label><select class="form-select" id="comparison-plans" name="plan" multiple size="8">{% for plan in selection.available_plans %}<option value="{{ plan.id }}"{% if plan.id in selected_plan_ids %} selected{% endif %}>{{ plan.provider.name }} · {{ plan.dashboard_name }}</option>{% empty %}<option disabled>Sin planes publicados</option>{% endfor %}</select><small class="form-hint">Si no eliges planes se muestran hasta cuatro como punto de partida.</small></div>
+  </div>
+  <button class="btn btn-primary mt-3 align-self-start" type="submit">Comparar</button>
+</form>
+
+{% if comparison.columns %}
+<div class="card"><div class="table-responsive"><table class="table table-vcenter comparison-table">
+  <thead><tr><th scope="col">Dato</th>{% for column in comparison.columns %}<th scope="col">{{ column.provider }}<br><span class="text-secondary">{% if column.product %}{{ column.product }} · {% endif %}{{ column.name }}</span></th>{% endfor %}</tr></thead>
+  <tbody>
+    <tr><th scope="row">Precio</th>{% for column in comparison.columns %}<td>{% for price in column.prices %}<div><strong>{{ price.currency }} {{ price.amount|floatformat:2 }}</strong> · {{ price.period }}</div>{% empty %}<span class="text-secondary">Precio sin datos</span>{% endfor %}</td>{% endfor %}</tr>
+    <tr><th scope="row">Observado</th>{% for column in comparison.columns %}<td>{{ column.observed_at|date:"d/m/Y H:i"|default:"Sin datos" }}</td>{% endfor %}</tr>
+    {% for row in comparison.rows %}<tr{% if row.differs %} class="table-warning"{% endif %}><th scope="row">{{ row.label }}{% if row.unit %}<small class="d-block text-secondary">{{ row.unit }}</small>{% endif %}</th>{% for cell in row.cells %}<td><span class="badge {% if cell.state == 'supported' %}bg-green-lt{% elif cell.state == 'limited' %}bg-yellow-lt{% elif cell.state == 'unsupported' %}bg-red-lt{% else %}bg-secondary-lt{% endif %}">{{ cell.state_label }}</span><div class="mt-1 text-break">{{ cell.value }}</div></td>{% endfor %}</tr>{% empty %}<tr><td colspan="{{ comparison.columns|length|add:1 }}">No hay características comparables para estos planes.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% else %}
+<div class="card card-body dashboard-empty"><h2>Sin planes para comparar</h2><p>La vista o los filtros actuales no contienen planes publicados válidos.</p></div>
+{% endif %}
+{% endblock %}

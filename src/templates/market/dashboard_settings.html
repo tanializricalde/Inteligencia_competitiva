@@ -1,0 +1,25 @@
+{% extends "layouts/app.html" %}
+{% block title %}Configuración de la aplicación · {{ application_branding.application_name }}{% endblock %}
+{% block content %}
+{% include "components/messages.html" %}
+<div class="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+  <div><h1 class="m-0">Configuración de la aplicación</h1><p class="text-secondary mb-0">Nombre, imágenes institucionales y vista inicial del dashboard.</p></div>
+  <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Volver al dashboard</a>
+</div>
+<div class="card mb-3"><div class="card-body">
+  <h2 class="card-title">Vista previa actual</h2>
+  <div class="brand-preview-grid">
+    <div><strong>Logo principal</strong>{% if application_branding.application_logo %}<img src="{% url 'application_brand_asset' 'application_logo' %}" alt="{{ application_branding.application_logo_alt }}">{% else %}<span>{{ application_branding.application_name }}</span>{% endif %}</div>
+    <div><strong>Logo compacto</strong>{% if application_branding.compact_logo %}<img src="{% url 'application_brand_asset' 'compact_logo' %}" alt="{{ application_branding.compact_logo_alt }}">{% else %}<span>{{ application_branding.compact_name }}</span>{% endif %}</div>
+    <div><strong>Logo del encabezado</strong>{% if application_branding.header_image %}<img src="{% url 'application_brand_asset' 'header_image' %}" alt="{{ application_branding.header_image_alt }}">{% elif application_branding.application_logo %}<img src="{% url 'application_brand_asset' 'application_logo' %}" alt="{{ application_branding.application_logo_alt }}">{% else %}<span>Imagen predeterminada</span>{% endif %}</div>
+    <div><strong>Favicon</strong>{% if application_branding.favicon %}<img src="{% url 'application_brand_asset' 'favicon' %}" alt="">{% else %}<span>Ícono predeterminado</span>{% endif %}</div>
+  </div>
+</div></div>
+<div class="card"><div class="card-body">
+  <form method="post" enctype="multipart/form-data" class="stacked-form">
+    {% csrf_token %}{{ form.as_div }}
+    <p class="text-secondary small">PNG, JPEG, WebP o SVG estático saneado; máximo 512 KiB y 2400×1200 px. SVG no admite scripts, eventos, estilos, enlaces ni recursos externos. Al reemplazar una imagen, el archivo anterior sólo se elimina si ningún otro campo lo referencia.</p>
+    <button class="btn btn-primary" type="submit">Guardar configuración</button>
+  </form>
+</div></div>
+{% endblock %}
